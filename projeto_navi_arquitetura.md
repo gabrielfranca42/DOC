@@ -116,12 +116,31 @@ erDiagram
         timestamp updated_at
     }
 
+    PROJECT_REVIEWS {
+        uuid id PK
+        uuid project_id FK
+        int rating "1 a 5 estrelas"
+        text comment_text
+        boolean is_approved "Moderação"
+        timestamp created_at
+    }
+
+    CHALLENGES {
+        uuid id PK
+        uuid partner_id FK
+        varchar title
+        text description
+        varchar status "Aberto, Fechado"
+    }
+
     NAV_USERS ||--o{ NAV_AUDIT_LOGS : "gera (Auditoria)"
     NAV_USERS ||--o{ PROJECTS : "cria / orienta"
     PROJECTS ||--o{ PROJECT_TAGS : "possui"
     TAGS ||--o{ PROJECT_TAGS : "classifica"
     NAV_USERS ||--o| TALENT_SHOWCASE : "exibe na vitrine"
     PROJECTS ||--o| PROJECT_ANALYTICS : "monitora"
+    PROJECTS ||--o{ PROJECT_REVIEWS : "recebe comentários"
+    NAV_USERS ||--o{ CHALLENGES : "publica desafios"
 ```
 
 ---
@@ -314,6 +333,8 @@ A tabela abaixo relaciona as principais necessidades do ecossistema NAVI (como i
 | **Busca Textual (Elasticsearch)** | `@elastic/elasticsearch` | `github.com/elastic/go-elasticsearch` | `Spring Data Elasticsearch` |
 | **Integração S3 (Upload de Arquivos)** | `@aws-sdk/client-s3` | `github.com/aws/aws-sdk-go-v2` | `AWS SDK for Java` |
 | **Integração SSO (LDAP / Entra ID)** | `passport-azure-ad` ou `@azure/msal-node` | `golang.org/x/oauth2` | `Spring Security OAuth2` |
+| **Envio de E-mails / Notificações** | `nodemailer` ou `@aws-sdk/client-ses` | `gopkg.in/gomail.v2` ou `AWS SDK` | `JavaMailSender` |
+| **Geração de PDF e Relatórios (CSV)** | `pdfkit` / `puppeteer` | `jung-kurt/gofpdf` | `JasperReports` ou `iText` |
 | **Gestão de Autorização (RBAC)** | Interceptadores customizados (Middlewares) | Middleware customizado no Gin/Fiber | `Spring Security` nativo |
 | **Prevenção de SQL Injection** | Nativo no ORM (`Prisma`/`TypeORM`) | Nativo no GORM | Nativo no Hibernate/JPA |
 | **Log de Requisições / Auditoria** | `winston` ou `pino` | `zap` ou `logrus` | `SLF4J` + `Logback` / `Spring Boot Actuator` |
@@ -337,6 +358,7 @@ Para a construção da interface de usuário com alto desempenho, acessibilidade
 | **Animações e Transições** | `framer-motion` ou `animejs` | Adicionam o visual "Premium" e interativo (*UX-Driven*). O *framer-motion* é ideal para animações de componentes, enquanto o *anime.js* é excelente para cronogramas complexos e SVGs. |
 | **Uploads Diretos** | `uppy` ou `react-dropzone` | Integrado com validação de MIME (RNF020), enviando direto para o S3 via *Presigned URLs*, sem onerar o backend. |
 | **Segurança (Anti-XSS)** | `dompurify` | Sanitiza o conteúdo rico gerado pelos usuários em descrições de projetos e resumos, evitando ataques maliciosos. |
+| **Internacionalização (i18n)** | `react-i18next` ou `next-intl` | Estrutura de dicionários para garantir suporte a português e inglês (RNF019). |
 | **Segurança HTTP** | `helmet` | Configura *headers* de segurança de rede vitais no ecossistema (CSP, anti-clickjacking). |
 | **Testes Unitários (Componentes)** | `vitest` + `testing-library` | Garantem que os componentes de negócio, UI e fluxos isolados (Hooks) funcionem perfeitamente. |
 | **Testes E2E (Integração)** | `cypress` ou `playwright` | Simula a navegação real do usuário testando os fluxos de ponta a ponta (ex: Submissão de um PI até sua aprovação). |
@@ -359,6 +381,8 @@ graph TD
         Auth["SSO & Rate Limit (RF014)"]
         Router["Roteamento REST OpenAPI 3.0"]
     end
+    
+    CRM_ServiceDesk[("CRM / Service Desk (Zendesk, etc)")]
 
     subgraph Backend_Services ["Serviços de Domínio (Backend)"]
         WorkflowService["Workflow de Publicações"]
@@ -379,6 +403,7 @@ graph TD
     Router --> WorkflowService
     Router --> SearchService
     Router --> LogService
+    Router --> CRM_ServiceDesk
 
     WorkflowService --> SQL
     WorkflowService --> Storage
