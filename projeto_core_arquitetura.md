@@ -501,3 +501,99 @@ O projeto segue a padronização do **Conventional Commits**, facilitando a gera
 > [!IMPORTANT]
 > **Regra do "Um Commit por Pacote/Responsabilidade":** 
 > Para preservar um histórico cirúrgico, fica instituído que os commits devem ser granulares e isolados por responsabilidade de negócio ou pacote. A única exceção aceitável a essa regra é a entrega de uma funcionalidade muito pequena (Ex: alterar o Controller e o Service simultaneamente em apenas dois arquivos para entregar uma `feat:` minúscula num mesmo escopo lógico). Evite *commits gigantescos* envolvendo múltiplos domínios.
+
+---
+
+## 8. Casos de Uso (Use Cases)
+
+Com base no Documento de Requisitos (PROJETO CORE), foram identificados os principais Atores e Casos de Uso essenciais do sistema. 
+
+### 8.1. Atores do Sistema
+* **Administrador do Sistema:** Responsável pela configuração, segurança e gestão geral da plataforma.
+* **Gestor Institucional:** Utiliza indicadores e relatórios para tomada de decisão estratégica.
+* **Coordenador Acadêmico:** Analisa desempenho acadêmico, evasão e indicadores dos cursos.
+* **Pesquisador/Analista de Dados:** Desenvolve modelos analíticos, relatórios e estudos institucionais.
+* **Usuário Consultor:** Realiza consultas em dashboards e painéis autorizados.
+* **Agente Inteligente:** Componente automatizado (PLN) responsável por interação em linguagem natural.
+* **DPO (Encarregado de Proteção de Dados):** Monitora conformidade LGPD, riscos de privacidade e auditoria.
+* **Sistema Integrador Externo:** Ator não humano que representa os sistemas de origem (CPA, Acadêmico, etc.) que fornecem dados.
+* **Discente/Docente (indireto):** Objeto das análises, indicadores e predições (não acessam diretamente o sistema).
+
+### 8.2. Diagrama Macro de Casos de Uso
+O diagrama abaixo ilustra as interações entre os principais atores e as funcionalidades macro da plataforma.
+
+```mermaid
+graph LR
+    %% Definição de Atores (Estilo de nó diferenciado)
+    Admin([Administrador])
+    Gestor([Gestor Institucional])
+    Coord([Coordenador Acadêmico])
+    Analista([Analista de Dados])
+    Consultor([Usuário Consultor])
+    SysExt[[Sistema Externo]]
+    DPO([DPO])
+
+    %% Casos de Uso Essenciais
+    UC1(Login e Gestão de Acesso)
+    UC2(Integração de Dados e ETL)
+    UC3(Visualização de Dashboards)
+    UC4(Gestão de Alertas de Evasão)
+    UC5(Consulta via Assistente PLN)
+    UC6(Auditoria e Conformidade LGPD)
+
+    %% Interações
+    Admin --> UC1
+    Admin --> UC6
+
+    Gestor --> UC1
+    Gestor --> UC3
+    Gestor --> UC4
+
+    Coord --> UC1
+    Coord --> UC3
+    Coord --> UC4
+
+    Analista --> UC1
+    Analista --> UC3
+    Analista --> UC4
+
+    Consultor --> UC1
+    Consultor --> UC3
+    Consultor --> UC5
+
+    SysExt --> UC2
+
+    DPO --> UC6
+```
+
+### 8.3. Descrição dos Casos de Uso Essenciais
+
+* **UC1: Login e Gestão de Acesso**
+  * **Atores:** Todos os usuários humanos.
+  * **Requisitos Relacionados:** RF001 a RF006, RNF001.
+  * **Descrição:** Autenticação (com suporte a MFA para acessos estratégicos), autorização baseada em perfil de acesso e gestão de redefinição de senhas, além do encerramento de sessão automático por inatividade.
+
+* **UC2: Integração de Dados e ETL**
+  * **Atores:** Sistema Integrador Externo.
+  * **Requisitos Relacionados:** RF007 a RF013, RNF015.
+  * **Descrição:** Carga automatizada e agendada, validação de qualidade de dados (duplicidade, ausências) e consolidação em um repositório analítico central, trazendo dados da CPA, Matrículas e Docentes.
+
+* **UC3: Visualização de Dashboards**
+  * **Atores:** Gestor Institucional, Coordenador Acadêmico, Analista, Consultor.
+  * **Requisitos Relacionados:** RF014 a RF020.
+  * **Descrição:** Acesso a painéis interativos e relatórios gerenciais/institucionais dinâmicos. Inclui a capacidade de filtrar dados, realizar consultas analíticas e exportar relatórios em PDF/Excel.
+
+* **UC4: Gestão de Alertas de Evasão (Modelos Preditivos)**
+  * **Atores:** Gestor Institucional, Coordenador Acadêmico, Analista de Dados.
+  * **Requisitos Relacionados:** RF021 a RF025, RN006, RN008.
+  * **Descrição:** Execução de modelos de Machine Learning (ML) para classificar o risco de evasão. Os alertas gerados são restritos a gestores autorizados e oferecem informações de explicabilidade da predição.
+
+* **UC5: Consulta via Assistente PLN**
+  * **Atores:** Usuário Consultor.
+  * **Requisitos Relacionados:** RF026 a RF028.
+  * **Descrição:** Interface de linguagem natural baseada em Agente Inteligente, permitindo que os usuários consultem dados do sistema de forma orgânica, com possibilidade de transbordo (escalar) para um operador humano quando necessário.
+
+* **UC6: Auditoria e Conformidade LGPD**
+  * **Atores:** Administrador do Sistema, DPO.
+  * **Requisitos Relacionados:** RF029 a RF031, RN002 a RN004, RN014, RNF002, RNF007.
+  * **Descrição:** Gestão das obrigações legais, garantindo que consultas sejam registradas na trilha de auditoria (logs), dados sensíveis anonimizados e exclusão de dados pessoais processada conforme solicitações do titular.
